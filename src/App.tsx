@@ -211,7 +211,7 @@ export default function Home() {
     <div className="bg-gray-100 flex justify-center items-center min-h-screen">
       <Card className="w-[400px]">
         <CardHeader>
-          <CardTitle>TODO App</CardTitle>
+          <CardTitle>ReactでToDoアプリ！</CardTitle>
         </CardHeader>
         <CardContent>
           <Input
