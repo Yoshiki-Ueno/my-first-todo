@@ -196,47 +196,138 @@
 
 
 
+//カレンダーとタスク追加のみ
+// import { useState } from "react";
+// import { Button } from "./components/ui/button";
+// import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
+// import { Input } from "./components/ui/input";
+// import { MdDelete } from "react-icons/md"; //追加
+// import { Calendar } from "@/components/ui/calendar"
+// import React from "react";
+
+
+// export default function Home() {
+//   const [todo, setTodo] = useState("");
+//   const [todos, setTodos] = useState<string[]>([]);
+//   const [date, setDate] = React.useState<Date | undefined>(new Date())
+//   // const todos = ["掃除する", "洗濯する", "料理する"];
+//   return (
+//     <div className="bg-gray-100 flex justify-center items-center min-h-screen">
+//       <Card className="w-[400px]">
+//         <CardHeader>
+//           <CardTitle>todoアプリ</CardTitle>
+//         </CardHeader>
+//         <CardContent>
+//           <Input
+//             placeholder="タスクを追加"
+//             onChange={(e) => setTodo(e.target.value)}
+//           />
+//           {/* <div>{todo}</div> */}
+//           <Button
+//             className="w-full mt-2"
+//             onClick={() => {
+//               setTodos([...todos, todo]);
+//               setTodo("");
+//             }}
+//           >
+//             追加
+//           </Button>
+//           <ul>
+//             {todos.map((todo, index) => (
+//               <li className="bg-white p-2 mt-2 flex">
+//                 <div>・{todo}</div>
+//                 <button
+//                   className="ml-2"
+//                   onClick={() => {
+//                     setTodos(todos.filter((_, i) => i !== index));
+//                   }}
+//                 >
+//                   <MdDelete color="red" /> 
+//                 </button>
+//               </li>
+//             ))}
+//           </ul>
+//         </CardContent>
+//       </Card>
+//       <Calendar
+//     mode="single"
+//     selected={date}
+//     onSelect={setDate}
+//     className="rounded-md border"
+//   />
+//     </div>
+//   );
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 import { useState } from "react";
 import { Button } from "./components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
 import { Input } from "./components/ui/input";
 import { MdDelete } from "react-icons/md"; //追加
+import { Calendar } from "@/components/ui/calendar";
+import React from "react";
 
 export default function Home() {
   const [todo, setTodo] = useState("");
-  const [todos, setTodos] = useState<string[]>([]);
-  // const todos = ["掃除する", "洗濯する", "料理する"];
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [todosByDate, setTodosByDate] = useState<{ [key: string]: string[] }>({});
+
+  const formattedDate = selectedDate ? selectedDate.toISOString().split("T")[0] : "";
+
+  const addTodo = () => {
+    if (!formattedDate) return;
+
+    setTodosByDate((prevTodos) => {
+      const updatedTodos = prevTodos[formattedDate] ? [...prevTodos[formattedDate], todo] : [todo];
+      return { ...prevTodos, [formattedDate]: updatedTodos };
+    });
+    setTodo("");
+  };
+
+  const deleteTodo = (todoIndex: number) => {
+    if (!formattedDate) return;
+
+    setTodosByDate((prevTodos) => {
+      const updatedTodos = prevTodos[formattedDate].filter((_, i) => i !== todoIndex);
+      return { ...prevTodos, [formattedDate]: updatedTodos };
+    });
+  };
+
   return (
     <div className="bg-gray-100 flex justify-center items-center min-h-screen">
       <Card className="w-[400px]">
         <CardHeader>
-          <CardTitle>ReactでToDoアプリ！</CardTitle>
+          <CardTitle>日付別のTODOアプリ</CardTitle>
         </CardHeader>
         <CardContent>
           <Input
             placeholder="タスクを追加"
+            value={todo}
             onChange={(e) => setTodo(e.target.value)}
           />
-          {/* <div>{todo}</div> */}
-          <Button
-            className="w-full mt-2"
-            onClick={() => {
-              setTodos([...todos, todo]);
-              setTodo("");
-            }}
-          >
+          <Button className="w-full mt-2" onClick={addTodo}>
             追加
           </Button>
           <ul>
-            {todos.map((todo, index) => (
-              <li className="bg-white p-2 mt-2 flex">
+            {todosByDate[formattedDate]?.map((todo, index) => (
+              <li key={index} className="bg-white p-2 mt-2 flex">
                 <div>・{todo}</div>
                 <button
                   className="ml-2"
-                  onClick={() => {
-                    setTodos(todos.filter((_, i) => i !== index));
-                  }}
+                  onClick={() => deleteTodo(index)}
                 >
                   <MdDelete color="red" /> 
                 </button>
@@ -245,6 +336,12 @@ export default function Home() {
           </ul>
         </CardContent>
       </Card>
+      <Calendar
+        mode="single"
+        selected={selectedDate}
+        onSelect={setSelectedDate}
+        className="rounded-md border"
+      />
     </div>
   );
 }
