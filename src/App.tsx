@@ -4,13 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
 import { Input } from "./components/ui/input";
 import { MdDelete } from "react-icons/md"; //追加
 import { Calendar } from "@/components/ui/calendar";
-// import React from "react";
+import React from "react";
 
 export default function Home() {
   const [todo, setTodo] = useState("");
-  // const [todos, setTodos] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [todosByDate, setTodosByDate] = useState<{ [key: string]: string[] }>({});
+  const [photosByDate, setPhotosByDate] = useState<{ [key: string]: string[] }>({});
 
   const formattedDate = selectedDate ? selectedDate.toISOString().split("T")[0] : "";
 
@@ -33,6 +33,22 @@ export default function Home() {
     });
   };
 
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!formattedDate || !e.target.files) return;
+
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    
+    reader.onloadend = () => {
+      setPhotosByDate((prevPhotos) => {
+        const updatedPhotos = prevPhotos[formattedDate] ? [...prevPhotos[formattedDate], reader.result as string] : [reader.result as string];
+        return { ...prevPhotos, [formattedDate]: updatedPhotos };
+      });
+    };
+
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div className="bg-gray-100 flex justify-center items-center min-h-screen">
       <Calendar
@@ -42,15 +58,14 @@ export default function Home() {
         className="rounded-md border"
       />
       
-      {/* 日付が選択された場合のみフォームを表示 */}
       {selectedDate && (
         <Card className="w-[400px] mt-4">
           <CardHeader>
-            <CardTitle>{formattedDate}のタスク</CardTitle>
+            <CardTitle>{formattedDate}の思い出と写真</CardTitle>
           </CardHeader>
           <CardContent>
             <Input
-              placeholder="タスクを追加"
+              placeholder="ひとことを追加"
               value={todo}
               onChange={(e) => setTodo(e.target.value)}
             />
@@ -70,6 +85,16 @@ export default function Home() {
                 </li>
               ))}
             </ul>
+            
+            <div className="mt-4">
+              <input type="file" accept="image/*" onChange={handlePhotoUpload} />
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {photosByDate[formattedDate]?.map((photo, index) => (
+                <img key={index} src={photo} alt={`Photo ${index}`} className="w-full h-auto object-cover" />
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}
